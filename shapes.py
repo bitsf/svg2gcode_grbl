@@ -1,10 +1,19 @@
 #!/usr/bin/env python
 
+# import logging
+# import traceback
+# import xml.etree.ElementTree as ET
+# from . import simplepath
+# from . import simpletransform
+# from . import cubicsuperpath
+# from . import cspsubdiv
+# from .bezmisc import beziersplitatt
+
 import logging
 import traceback
 import xml.etree.ElementTree as ET
 import simplepath
-import simpletransform 
+import simpletransform
 import cubicsuperpath
 import cspsubdiv
 from bezmisc import beziersplitatt
