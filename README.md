@@ -2,8 +2,9 @@ Forked from vishpat/svg2gcode
 
 https://github.com/vishpat/svg2gcode
 
+I found that the plugins for inkscape and illustrator would crash when I tried to convert SVG's with many thousands of lines to gcode. 
 
-Modified to generate gcode for GRBL based pen plotter
+So I modified this to generate gcode for GRBL based pen plotter
 
 
 Usage as cli:
