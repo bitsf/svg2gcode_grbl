@@ -40,4 +40,6 @@ feed_rate = 80000
 """ decimal precision of gcode"""
 precision = 2
 
+
+""" scale gcode to fit bed size"""
 auto_scale = False

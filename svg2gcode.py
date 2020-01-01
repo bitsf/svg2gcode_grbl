@@ -7,41 +7,18 @@ from shapes import point_generator
 from config import *
 import re
 
-# path = "./svg/example.svg"
-
-# path = "./svg/big_example.svg"
-# path = "./svg/medium_example.svg"
-# path = "./svg/bunny.svg"
-# path = "./svg/grid.svg"
-# path = "./svg/Lorenz_attractor.svg"
-# path = "./svg/text.svg"
-# path = "./svg/A.svg"
 path = "./example.svg"
-
-output = "./gcode/output2.gcode"
-output = "temp.gcode"
-
+output = "./gcode/output1.gcode"
 debug = False
 
-
-# todo why is it flipped?
 # todo add manual scale option
-# todo add propper header
 # todo add z rise option
-# todo make interface
-
 
 def generate_gcode(path, autoScale = True):
     svg_shapes = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
 
-
     with open("header.txt") as headerFile:
         header = headerFile.read()
-    # preamble = ""
-    # with open("header.txt") as headerFile:
-    #     for cnt, line in enumerate(headerFile):
-    #         preamble += f"({line})\n"
-
 
     commands = []
     tree = ET.parse(path)
@@ -66,8 +43,6 @@ def generate_gcode(path, autoScale = True):
     if autoScale:
 
         scale_x = min(bed_max_x / max(width, height),bed_max_y / max(width, height))
-        # scale_y = bed_max_y / max(width, height)
-        # scale_x = min(scale_x, scale_y)
         scale_y = scale_x
 
     else:
@@ -82,10 +57,10 @@ def generate_gcode(path, autoScale = True):
         print(preamble)
 
     commands.append(header)
-    commands.append("(begin)")
+    commands.append("(begintintin)")
     commands.append(preamble)
-
     commands.append(f"F{feed_rate}")
+
     print("\n begin main loop")
 
     for elem in root.iter():
@@ -167,7 +142,6 @@ def generate_gcode(path, autoScale = True):
     commands.append(postamble)
     return commands
 
-
 def g_string(x, y, z=False, prefix="G1", p=3):
     if z is not False:
         return f"{prefix} X{x:.{p}f} Y{y:.{p}f} Z{z:.{p}f}"
@@ -176,44 +150,12 @@ def g_string(x, y, z=False, prefix="G1", p=3):
         return f"{prefix} X{x:.{p}f} Y{y:.{p}f}"
 
 
-# if __name__ == "__main__":
-#     c = generate_gcode(path)
-#     # for i in c:
-#     #     print(i)
-#
-#     with open(output, 'w+') as output_file:
-#         for i in c:
-#             output_file.write(i + "\n")
-#
-#     print("done")
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
+    c = generate_gcode(path)
 
 
-    if len(sys.argv) < 3:
-        print("usage: python convert.py source.svg destination.gcode")
-        sys.exit()
-
-    source = sys.argv[1]
-    target = sys.argv[2]
-
-
-
-    print("converting!")
-
-    print(source, target)
-
-    with open(target, 'w+') as output_file:
-        g = generate_gcode(source)
-        for i in g:
+    with open(output, 'w+') as output_file:
+        for i in c:
             output_file.write(i + "\n")
 
-    print("done!")
+    print("done")
