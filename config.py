@@ -23,9 +23,10 @@ bed_max_y = 280
 Used to control the smoothness/sharpness of the curves.
 Smaller the value greater the sharpness. Make sure the
 value is greater than 0.1
+
 """
-smoothness = 0.0101
-smoothness = 40
+smoothness = 0.02
+
 
 
 """ height that the z axis will use to travel between strokes """
