@@ -142,6 +142,7 @@ def generate_gcode(path, autoScale = True):
     commands.append(postamble)
     return commands
 
+
 def g_string(x, y, z=False, prefix="G1", p=3):
     if z is not False:
         return f"{prefix} X{x:.{p}f} Y{y:.{p}f} Z{z:.{p}f}"
