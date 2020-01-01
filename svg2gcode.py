@@ -7,7 +7,7 @@ from shapes import point_generator
 from config import *
 import re
 
-path = "./svg/example.svg"
+# path = "./svg/example.svg"
 
 # path = "./svg/big_example.svg"
 # path = "./svg/medium_example.svg"
@@ -15,9 +15,11 @@ path = "./svg/example.svg"
 # path = "./svg/grid.svg"
 # path = "./svg/Lorenz_attractor.svg"
 # path = "./svg/text.svg"
+# path = "./svg/A.svg"
+path = "./example.svg"
 
-
-output = "./gcode/output.gcode"
+output = "./gcode/output2.gcode"
+output = "temp.gcode"
 
 debug = False
 
@@ -29,24 +31,21 @@ debug = False
 # todo make interface
 
 
-def generate_gcode(path):
+def generate_gcode(path, autoScale = True):
     svg_shapes = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
-    precision = 1
+
+
+    with open("header.txt") as headerFile:
+        header = headerFile.read()
+    # preamble = ""
+    # with open("header.txt") as headerFile:
+    #     for cnt, line in enumerate(headerFile):
+    #         preamble += f"({line})\n"
+
 
     commands = []
-
     tree = ET.parse(path)
-    # tree = ET.parse(sys.stdin)
     root = tree.getroot()
-
-    # print("\n printing root.iter")
-    # for i in root.iter():
-    #     print(i.tag)
-    #
-    # print("\n printing root with tag and attrib")
-    # for i in root:
-    #     print(i.tag, i.attrib)
-
     width = root.get('width')
     height = root.get('height')
 
@@ -59,34 +58,40 @@ def generate_gcode(path):
         print("Unable to get width and height for the svg")
         sys.exit(1)
 
-    width = re.sub("[^0-9]", "", width)
-    height = re.sub("[^0-9]", "", height)
+    width = float(re.sub("[^0-9]", "", width))
+    height = float(re.sub("[^0-9]", "", height))
     print("\n width / height")
     print(width, height)
 
-    width = float(width)
-    height = float(height)
+    if autoScale:
 
-    # scale_x = bed_max_x / max(width, height)
-    # scale_y = bed_max_y / max(width, height)
-    # scale_x= min(scale_x, scale_y)
-    # scale_y = scale_x
-    #
-    scale_x = 1
-    scale_y = 1
+        scale_x = min(bed_max_x / max(width, height),bed_max_y / max(width, height))
+        # scale_y = bed_max_y / max(width, height)
+        # scale_x = min(scale_x, scale_y)
+        scale_y = scale_x
 
-    print("\npreamble")
-    print(preamble)
-    commands.append(preamble)
+    else:
+
+        scale_x = 1
+        scale_y = 1
+
+    print("scale factor: ", scale_y)
+
+    if debug:
+        print("\n preamble")
+        print(preamble)
+
+    commands.append(header)
     commands.append("(begin)")
-    for i in [f"{feed_rate}", "G90"]:
-        commands.append(i)
+    commands.append(preamble)
+
+    commands.append(f"F{feed_rate}")
     print("\n begin main loop")
 
     for elem in root.iter():
 
         if debug:
-            print("\nelem")
+            print("\n\n\n***************** elem ******************")
             print(elem)
 
         try:
@@ -98,27 +103,35 @@ def generate_gcode(path):
         if tag_suffix in svg_shapes:
 
             if debug:
-                print("\ntag_suffix")
+                print("\n tag_suffix")
                 print(tag_suffix)
 
             for i in ["\n", "({})".format(tag_suffix), ""]:
                 commands.append(i)  # add tag name ad comment
 
             shape_class = getattr(shapes_pkg, tag_suffix)
+            if debug:
+                print("\n shape_class")
+                print(shape_class)
+
             shape_obj = shape_class(elem)
+            if debug:
+                print("\n shape_obj")
+            #print(shape_obj)
+
             d = shape_obj.d_path()
 
             m = shape_obj.transformation_matrix()  # todo work out what d and m are
 
             if debug:
-                print("\nd", d)
+                print("\n d", d)
                 print(d)
-                print("\nm", m)
+                print("\n m", m)
                 print(m)
 
             if d:  # begin shape processing
                 if debug:
-                    print("\nshape preamble")
+                    print("\n shape preamble")
                     print(shape_preamble)
 
                 commands.append(shape_preamble)
@@ -129,23 +142,20 @@ def generate_gcode(path):
                 for x, y in p:
 
                     if first:
-                        first = (x, y)
-                        # commands.append("G0 X%0.1f Y%0.1f Z%0.1f" %(scale_x*x, scale_y*y, zTravel))
-                        command = g_string(x, y, zTravel, "G0", precision)
+
+                        command = g_string(x * scale_x, (-y+height)  * scale_y, zTravel, "G0", precision) #todo why do i need to flip?
                         commands.append(command)
+                        if debug:
+                            print(command)
                         first = False
 
                     # if x > 0 and x < bed_max_x and y > 0 and y < bed_max_y:
 
-                    # commands.append("G1 X%0.3f Y%0.3f Z%0.3f" % (scale_x*x, scale_y*y, zDraw))
-                    command = g_string(x, y, zDraw, "G1", precision)
+                    command = g_string(x * scale_x, (-y+height) * scale_y, zDraw, "G1", precision)
                     commands.append(command)
-                    # else:
-                    #     print("out of bed")
+                    if debug:
+                        print(command)
 
-                    # count += 1
-
-                # commands.append("G0 Z%0.1f" %zTravel)
                 command = g_string(x, y, zTravel, "G0", precision)
                 commands.append(command)
 
@@ -166,13 +176,44 @@ def g_string(x, y, z=False, prefix="G1", p=3):
         return f"{prefix} X{x:.{p}f} Y{y:.{p}f}"
 
 
-if __name__ == "__main__":
-    c = generate_gcode(path)
-    # for i in c:
-    #     print(i)
+# if __name__ == "__main__":
+#     c = generate_gcode(path)
+#     # for i in c:
+#     #     print(i)
+#
+#     with open(output, 'w+') as output_file:
+#         for i in c:
+#             output_file.write(i + "\n")
+#
+#     print("done")
 
-    with open(output, 'w+') as output_file:
-        for i in c:
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+
+
+    if len(sys.argv) < 3:
+        print("usage: python convert.py source.svg destination.gcode")
+        sys.exit()
+
+    source = sys.argv[1]
+    target = sys.argv[2]
+
+
+
+    print("converting!")
+
+    print(source, target)
+
+    with open(target, 'w+') as output_file:
+        g = generate_gcode(source)
+        for i in g:
             output_file.write(i + "\n")
 
-    print("done")
+    print("done!")
