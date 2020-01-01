@@ -5,23 +5,37 @@ import xml.etree.ElementTree as ET
 import shapes as shapes_pkg
 from shapes import point_generator
 from config import *
+import re
 
 path = "./svg/example.svg"
 
-#path = "./svg/big_example.svg"
-#path = "./svg/medium_example.svg"
-#path = "./svg/bunny.svg"
+# path = "./svg/big_example.svg"
+# path = "./svg/medium_example.svg"
+# path = "./svg/bunny.svg"
+# path = "./svg/grid.svg"
+# path = "./svg/Lorenz_attractor.svg"
+# path = "./svg/text.svg"
 
-tree = ET.parse(path)
+
+output = "./gcode/output.gcode"
 
 debug = False
 
 
-def generate_gcode(tree):
+# todo why is it flipped?
+# todo add manual scale option
+# todo add propper header
+# todo add z rise option
+# todo make interface
+
+
+def generate_gcode(path):
     svg_shapes = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
+    precision = 1
 
     commands = []
 
+    tree = ET.parse(path)
     # tree = ET.parse(sys.stdin)
     root = tree.getroot()
 
@@ -45,19 +59,28 @@ def generate_gcode(tree):
         print("Unable to get width and height for the svg")
         sys.exit(1)
 
+    width = re.sub("[^0-9]", "", width)
+    height = re.sub("[^0-9]", "", height)
     print("\n width / height")
     print(width, height)
 
     width = float(width)
     height = float(height)
 
-    scale_x = bed_max_x / max(width, height)
-    scale_y = bed_max_y / max(width, height)
+    # scale_x = bed_max_x / max(width, height)
+    # scale_y = bed_max_y / max(width, height)
+    # scale_x= min(scale_x, scale_y)
+    # scale_y = scale_x
+    #
+    scale_x = 1
+    scale_y = 1
 
     print("\npreamble")
     print(preamble)
     commands.append(preamble)
     commands.append("(begin)")
+    for i in [f"{feed_rate}", "G90"]:
+        commands.append(i)
     print("\n begin main loop")
 
     for elem in root.iter():
@@ -68,6 +91,7 @@ def generate_gcode(tree):
 
         try:
             _, tag_suffix = elem.tag.split('}')
+
         except ValueError:
             continue
 
@@ -78,13 +102,13 @@ def generate_gcode(tree):
                 print(tag_suffix)
 
             for i in ["\n", "({})".format(tag_suffix), ""]:
-                commands.append(i) # add tag name ad comment
+                commands.append(i)  # add tag name ad comment
 
             shape_class = getattr(shapes_pkg, tag_suffix)
             shape_obj = shape_class(elem)
             d = shape_obj.d_path()
 
-            m = shape_obj.transformation_matrix() #todo work out what d and m are
+            m = shape_obj.transformation_matrix()  # todo work out what d and m are
 
             if debug:
                 print("\nd", d)
@@ -101,26 +125,29 @@ def generate_gcode(tree):
 
                 p = point_generator(d, m, smoothness)  # tuples of x y coords
 
-
-                count = 0
+                first = True
                 for x, y in p:
 
-                    if count == 0:
-                        first = (x,y)
-                        commands.append("G0 X%0.1f Y%0.1f Z%0.1f" %(x, y, zTravel))  # todo what is %0.1f
+                    if first:
+                        first = (x, y)
+                        # commands.append("G0 X%0.1f Y%0.1f Z%0.1f" %(scale_x*x, scale_y*y, zTravel))
+                        command = g_string(x, y, zTravel, "G0", precision)
+                        commands.append(command)
+                        first = False
 
                     # if x > 0 and x < bed_max_x and y > 0 and y < bed_max_y:
-                    if debug:
-                        print("G1 X%0.1f Y%0.1f" % (x, y))
 
-                    commands.append("G1 X%0.1f Y%0.1f Z%0.1f" % (x, y, zDraw))
-
+                    # commands.append("G1 X%0.3f Y%0.3f Z%0.3f" % (scale_x*x, scale_y*y, zDraw))
+                    command = g_string(x, y, zDraw, "G1", precision)
+                    commands.append(command)
                     # else:
                     #     print("out of bed")
-                    count += 1
 
-                last = (x,y)
-                commands.append("G0 Z%0.1f" %zTravel)
+                    # count += 1
+
+                # commands.append("G0 Z%0.1f" %zTravel)
+                command = g_string(x, y, zTravel, "G0", precision)
+                commands.append(command)
 
                 if debug:
                     print(shape_postamble)
@@ -131,12 +158,20 @@ def generate_gcode(tree):
     return commands
 
 
+def g_string(x, y, z=False, prefix="G1", p=3):
+    if z is not False:
+        return f"{prefix} X{x:.{p}f} Y{y:.{p}f} Z{z:.{p}f}"
+
+    else:
+        return f"{prefix} X{x:.{p}f} Y{y:.{p}f}"
+
+
 if __name__ == "__main__":
-    c = generate_gcode(tree)
+    c = generate_gcode(path)
     # for i in c:
     #     print(i)
 
-    with open("./gcode/output.gcode", 'w+') as output_file:
+    with open(output, 'w+') as output_file:
         for i in c:
             output_file.write(i + "\n")
 
