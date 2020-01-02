@@ -7,18 +7,21 @@ from shapes import point_generator
 from config import *
 import re
 from math import sqrt
-
-
+from datetime import datetime as dt
+from random import randint
 path = "./svg/lines.svg"
 path = "./svg/medium_example.svg"
-#path = "./svg/text.svg"
-#path = "./svg/example.svg"
+# path = "./svg/text.svg"
+# path = "./svg/example.svg"
 
+print(path)
 debug = False
 zTravel = 50
 
 def get_shapes(path, autoScale=True):
-    print("get shapes")
+    print("\n  get shapes")
+    t1 = dt.now()
+
     svg_shapes = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
     shapes = []
     tree = ET.parse(path)
@@ -84,6 +87,8 @@ def get_shapes(path, autoScale=True):
 
             shapes.append(coords)
 
+    timer(t1, "parsing gcode")
+
     return shapes
 
 def g_string(x, y, z=False, prefix="G1", p=3):
@@ -95,7 +100,8 @@ def g_string(x, y, z=False, prefix="G1", p=3):
 
 def shapes2gcode(shapes):
 
-    print("shapes 2 gcode")
+    print(" shapes 2 gcode")
+    t1 = dt.now()
     commands = []
     for i in shapes:
 
@@ -106,6 +112,7 @@ def shapes2gcode(shapes):
 
         commands.append(g_string(i[-1][0], i[-1][1], zTravel, "G0"))
 
+    timer(t1, "shapes2gcode")
     return commands
 
 
@@ -117,6 +124,11 @@ def getDistance(a, b):
     y = y2 - y1
 
     return sqrt(x * x + y * y)
+
+def timer(t,label):
+    duration = dt.now() - t
+    duration = duration.total_seconds()
+    print ("{} took {}".format(label, duration))
 
 
 shapes = get_shapes(path)
@@ -130,39 +142,47 @@ newOrder = []
 
 newOrder.append(shapes.pop(0))
 
-print("begin")
+print(" optimise")
+
+t1 = dt.now()
 l = len(shapes)
-while len(newOrder) < l:
+c = 1
+while len(newOrder) <= l:
+
+    progress = int(c/l*100)
+    if c%100 == 0:
+        print(progress)
 
     shortest = float("Inf")
     last = newOrder[-1][-1]
+    # t3 = dt.now()
     for shape in shapes:
-        d = getDistance(last, shape[0])
-        if d < shortest:
-            shortest = d
-            selection = shape
-
+        # if shape not in newOrder:
+            d = getDistance(last, shape[0])
+            if d < shortest:
+                shortest = d
+                selection = shape
+    # timer(t3, "this loop")
     newOrder.append(selection)
     shapes.remove(selection)
 
+    c += 1
 
-
-
-
-# for i in shapes:
-#     for j in shapes:
-
+timer(t1, "optimizing")
 
 
 c = shapes2gcode(newOrder)
 
 output = "./gcode_optimised/1.gcode"
 
+
+
 if __name__ == "__main__":
 
-
+    t2 = dt.now()
     with open(output, 'w+') as output_file:
         for i in c:
             output_file.write(i + "\n")
 
+    timer(t2, "writing")
     print("done")
