@@ -10,8 +10,8 @@ from math import sqrt
 from datetime import datetime as dt
 from random import randint
 path = "./svg/lines.svg"
-path = "./svg/medium_example.svg"
-# path = "./svg/text.svg"
+#path = "./svg/medium_example.svg"
+#path = "./svg/text.svg"
 # path = "./svg/example.svg"
 
 print(path)
@@ -130,6 +130,13 @@ def timer(t,label):
     duration = duration.total_seconds()
     print ("{} took {}".format(label, duration))
 
+# def getTotalDistance(commands):
+#
+#     last = (0,0,0)
+#
+#     for c in commands:
+
+
 
 shapes = get_shapes(path)
 c = shapes2gcode(shapes)
@@ -147,6 +154,7 @@ print(" optimise")
 t1 = dt.now()
 l = len(shapes)
 c = 1
+
 while len(newOrder) <= l:
 
     progress = int(c/l*100)
@@ -155,23 +163,38 @@ while len(newOrder) <= l:
 
     shortest = float("Inf")
     last = newOrder[-1][-1]
-    # t3 = dt.now()
+
     for shape in shapes:
-        # if shape not in newOrder:
-            d = getDistance(last, shape[0])
-            if d < shortest:
-                shortest = d
-                selection = shape
-    # timer(t3, "this loop")
-    newOrder.append(selection)
+
+        d = getDistance(last, shape[0])
+        d2 = getDistance(last,shape[-1])
+
+        if d < shortest:
+            shortest = d
+            selection = shape
+            reverse = False
+
+        if d2 < shortest:
+            shortest = d2
+            reverse = True
+            selection = shape
+
+    if reverse:
+        newOrder.append([x for x in reversed(selection)])
+    else:
+        newOrder.append(selection)
     shapes.remove(selection)
 
     c += 1
 
 timer(t1, "optimizing")
 
+# print("\n total distance")
+# print(getTotalDistance(newOrder))
 
 c = shapes2gcode(newOrder)
+
+
 
 output = "./gcode_optimised/1.gcode"
 
