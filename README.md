@@ -6,11 +6,15 @@ I found that the plugins for inkscape and illustrator would crash when I tried t
 
 So I modified this to generate gcode for GRBL based pen plotter
 
-
-Usage as cli:
+**Usage as cli:**
 
 
 _python convert.py source.svg destination.gcode_
+
+
+**or in bash**
+
+_copy 's2g' to your path and run from anywhere_
 
 
 There are various settings you can change in config.py. Most notably, you must set an upper and lower position for the z axis.
