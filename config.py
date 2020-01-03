@@ -27,8 +27,6 @@ value is greater than 0.1
 """
 smoothness = 0.02
 
-
-
 """ height that the z axis will use to travel between strokes """
 zTravel = 4
 
@@ -44,3 +42,6 @@ precision = 2
 
 """ scale gcode to fit bed size"""
 auto_scale = False
+
+""" optimize path - slow for large files"""
+optimise = True

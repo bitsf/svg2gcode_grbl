@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from svg2gcode import generate_gcode
+from svg2gcode import main
 import sys
 import os
 # from config import *
@@ -24,9 +24,6 @@ if __name__ == "__main__":
 
     print(source, target)
 
-    with open(target, 'w+') as output_file:
-        g = generate_gcode(source)
-        for i in g:
-            output_file.write(i + "\n")
+    main(source, target)
 
     print("done!")
