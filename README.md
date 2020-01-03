@@ -8,14 +8,13 @@ So I modified this to generate gcode for GRBL based pen plotter
 
 **Usage as cli:**
 
-
 _python convert.py source.svg destination.gcode_
-
 
 **or in bash**
 
 _copy 's2g' to your path and run from anywhere_
 
+**There is a brute force path optimisation algarithm. Very slow for large files, can be disabled in config.py**
 
 There are various settings you can change in config.py. Most notably, you must set an upper and lower position for the z axis.
 
