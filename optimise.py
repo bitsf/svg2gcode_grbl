@@ -8,20 +8,12 @@ from config import *
 import re
 from math import sqrt
 from datetime import datetime as dt
-from random import randint
-path = "./svg/lines.svg"
-#path = "./svg/medium_example.svg"
-#path = "./svg/text.svg"
-# path = "./svg/example.svg"
 
-print(path)
 debug = False
-zTravel = 50
 
 def get_shapes(path, autoScale=True):
     print("\n  get shapes")
     t1 = dt.now()
-
     svg_shapes = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
     shapes = []
     tree = ET.parse(path)
@@ -29,12 +21,12 @@ def get_shapes(path, autoScale=True):
     width = root.get('width')
     height = root.get('height')
 
-    if width == None or height == None:
+    if width is None or height is None:
         viewbox = root.get('viewBox')
         if viewbox:
             _, _, width, height = viewbox.split()
 
-    if width == None or height == None:
+    if width is None or height is None:
         print("Unable to get width and height for the svg")
         sys.exit(1)
 
@@ -51,12 +43,6 @@ def get_shapes(path, autoScale=True):
 
         if tag_suffix in svg_shapes:
 
-            # print("\n\n\n***************** elem ******************")
-            # print(elem)
-            # print("")
-            # print(tag_suffix)
-            # print("")
-
             shape_class = getattr(shapes_pkg, tag_suffix)
             shape_obj = shape_class(elem)
             d = shape_obj.d_path()
@@ -67,20 +53,17 @@ def get_shapes(path, autoScale=True):
             if d:  # begin shape processing
 
                 p = point_generator(d, m, smoothness)  # tuples of x y coords
-
                 first = True
 
                 for x, y in p:  # todo sort out this nightmare
 
-                    # print(x, y)
-
                     if first:
-                        coords.append((x, -y+height))
+                        coords.append((x, -y + height))
 
                     else:
 
                         if not (x, y) == coords[-1]:
-                            coords.append((x, -y+height))
+                            coords.append((x, -y + height))
 
                     if first:
                         first = False
@@ -91,6 +74,7 @@ def get_shapes(path, autoScale=True):
 
     return shapes
 
+
 def g_string(x, y, z=False, prefix="G1", p=3):
     if z is not False:
         return f"{prefix} X{x:.{p}f} Y{y:.{p}f} Z{z:.{p}f}"
@@ -98,114 +82,96 @@ def g_string(x, y, z=False, prefix="G1", p=3):
     else:
         return f"{prefix} X{x:.{p}f} Y{y:.{p}f}"
 
-def shapes2gcode(shapes):
 
+def shapes_2_gcode(shapes):
     print(" shapes 2 gcode")
     t1 = dt.now()
     commands = []
     for i in shapes:
 
-        commands.append( g_string(i[0][0],i[0][1],zTravel,"G0"))
+        commands.append(g_string(i[0][0], i[0][1], zTravel, "G0"))
 
         for j in i:
             commands.append(g_string(j[0], j[1], zDraw))
 
         commands.append(g_string(i[-1][0], i[-1][1], zTravel, "G0"))
 
-    timer(t1, "shapes2gcode")
+    timer(t1, "shapes_2_gcode")
     return commands
 
 
-def getDistance(a, b):
+def get_distance(a, b, sq=True):
     x1, y1 = a[0], a[1]
     x2, y2 = b[0], b[1]
 
     x = x2 - x1
     y = y2 - y1
+    if sq:
+        return sqrt(x * x + y * y)
+    else:
+        return x * x + y * y
 
-    return sqrt(x * x + y * y)
 
-def timer(t,label):
+def timer(t, label):
     duration = dt.now() - t
     duration = duration.total_seconds()
-    print ("{} took {}".format(label, duration))
-
-# def getTotalDistance(commands):
-#
-#     last = (0,0,0)
-#
-#     for c in commands:
+    print("{} took {}".format(label, duration))
+    return duration
 
 
+def optimise_path(shapes, sq=True):
+    newOrder = []
+    newOrder.append(shapes.pop(0))
+    l = len(shapes)
+    while len(newOrder) <= l:
 
-shapes = get_shapes(path)
-c = shapes2gcode(shapes)
+        shortest = float("Inf")
+        last = newOrder[-1][-1]
 
+        for shape in shapes:
 
-print("")
+            d = get_distance(last, shape[0], sq)
+            d2 = get_distance(last, shape[-1], sq)
 
-newOrder = []
+            if d < shortest:
+                shortest = d
+                selection = shape
+                reverse = False
 
+            if d2 < shortest:
+                shortest = d2
+                reverse = True
+                selection = shape
 
-newOrder.append(shapes.pop(0))
-
-print(" optimise")
-
-t1 = dt.now()
-l = len(shapes)
-c = 1
-
-while len(newOrder) <= l:
-
-    progress = int(c/l*100)
-    if c%100 == 0:
-        print(progress)
-
-    shortest = float("Inf")
-    last = newOrder[-1][-1]
-
-    for shape in shapes:
-
-        d = getDistance(last, shape[0])
-        d2 = getDistance(last,shape[-1])
-
-        if d < shortest:
-            shortest = d
-            selection = shape
-            reverse = False
-
-        if d2 < shortest:
-            shortest = d2
-            reverse = True
-            selection = shape
-
-    if reverse:
-        newOrder.append([x for x in reversed(selection)])
-    else:
-        newOrder.append(selection)
-    shapes.remove(selection)
-
-    c += 1
-
-timer(t1, "optimizing")
-
-# print("\n total distance")
-# print(getTotalDistance(newOrder))
-
-c = shapes2gcode(newOrder)
-
-
-
-output = "./gcode_optimised/1.gcode"
-
+        if reverse:
+            newOrder.append([x for x in reversed(selection)])
+        else:
+            newOrder.append(selection)
+        shapes.remove(selection)
 
 
 if __name__ == "__main__":
 
-    t2 = dt.now()
+    file_path = "./svg/lines.svg"
+    file_path = "./svg/medium_example.svg"
+    file_path = "./svg/text.svg"
+    file_path = "./svg/example.svg"
+
+    output = "./gcode_optimised/1.gcode"
+
+    shapes = get_shapes(file_path)
+
+    if optimize:
+
+        newOrder = optimise_path(shapes)
+        commands = shapes_2_gcode(newOrder)
+
+    else:
+
+        commands = shapes_2_gcode(shapes)
+
     with open(output, 'w+') as output_file:
         for i in c:
             output_file.write(i + "\n")
 
-    timer(t2, "writing")
     print("done")
