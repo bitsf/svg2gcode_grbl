@@ -17,7 +17,7 @@ if __name__ == "__main__":
     targetFile = sys.argv[3]
 
     source = os.path.join(sourceDir, sourceFile)
-    target = os.path.join(sourceDir,targetFile)
+    target = os.path.join(sourceDir, targetFile)
 
 
     print("converting!")
