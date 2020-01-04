@@ -16,7 +16,7 @@ debug = False
 # todo add z rise option
 # todo why do i need to flip?
 
-def get_shapes(path, autoScale=True):
+def get_shapes(path, auto_scale=True):
 
     t1 = dt.now()
     svg_shapes = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
@@ -25,6 +25,8 @@ def get_shapes(path, autoScale=True):
     root = tree.getroot()
     width = root.get('width')
     height = root.get('height')
+
+
 
     if width is None or height is None:
         viewbox = root.get('viewBox')
@@ -37,6 +39,18 @@ def get_shapes(path, autoScale=True):
 
     width = float(re.sub("[^0-9]", "", width))
     height = float(re.sub("[^0-9]", "", height))
+
+    if auto_scale:
+        print("\nauto scaling")
+
+        scale_x = bed_max_x / max(width, height)
+        scale_y = bed_max_y / max(width, height)
+        scale_x = min(scale_x, scale_y)
+        scale_y = scale_x
+
+        print("width / height        ", width, height)
+        print("scale factor          ", scale_x, "\n")
+
 
     for elem in root.iter():
 
@@ -62,13 +76,22 @@ def get_shapes(path, autoScale=True):
 
                 for x, y in p:  # todo sort out this nightmare
 
+                    y = -y + height
+
+                    if auto_scale:
+
+                        x *= scale_x
+                        y *= scale_y
+
                     if first:
-                        coords.append((x, -y + height))
+                        #coords.append((x, -y + height))
+                        coords.append((x, y))
 
                     else:
 
                         if not (x, y) == coords[-1]:
-                            coords.append((x, -y + height))
+                            #coords.append((x, -y + height))
+                            coords.append((x, y))
 
                     if first:
                         first = False
@@ -114,7 +137,7 @@ def write_file(output, commands):
 
 def main(file_path, output):
 
-    shapes = get_shapes(file_path)
+    shapes = get_shapes(file_path, auto_scale)
 
 
 
