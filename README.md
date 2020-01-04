@@ -14,7 +14,7 @@ _python convert.py source.svg destination.gcode_
 
 _copy 's2g' to your path and run from anywhere_
 
-**There is a brute force path optimisation algarithm. Very slow for large files, can be disabled in config.py**
+**There is a brute force path optimisator algarithm. Very slow for large files, can be disabled in config.py**
 
 *illustrator exports in points* regardless of your document settings
 if units are set to points in the config file, we convert to mm on the fly
@@ -24,3 +24,6 @@ There are various settings you can change in config.py. Most notably, you must s
 zTravel is the height it will move to before traveling to the next stroke
 
 zDraw should be the heiggit at which the pen will make contact with the paper
+
+zDraw should be the height at which the pen will make contact with the paper
+
