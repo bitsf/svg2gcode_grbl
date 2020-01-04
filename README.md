@@ -16,7 +16,7 @@ _copy 's2g' to your path and run from anywhere_
 
 **There is a brute force path optimisator algarithm. Very slow for large files, can be disabled in config.py**
 
-*illustrator exports in points* regardless of your document settings
+**illustrator exports in points** regardless of your document settings
 if units are set to points in the config file, we convert to mm on the fly
 
 There are various settings you can change in config.py. Most notably, you must set an upper and lower position for the z axis.
