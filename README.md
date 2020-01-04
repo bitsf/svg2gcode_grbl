@@ -1,6 +1,6 @@
 ## SVG to Gcode converter for GRBL pen plotter
 
-Forked from [vishpat/svg2gcode[(https://github.com/vishpat/svg2gcode)
+Forked from [vishpat/svg2gcode](https://github.com/vishpat/svg2gcode)
 
 
 I found that the plugins for inkscape and illustrator would crash when I tried to convert SVG's with many thousands of lines to gcode.  
