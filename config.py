@@ -41,7 +41,7 @@ precision = 2
 
 
 """ scale gcode to fit bed size"""
-auto_scale = False
+auto_scale = True
 
 """ optimize path - slow for large files"""
 optimise = True
