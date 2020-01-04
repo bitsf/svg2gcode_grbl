@@ -3,7 +3,7 @@ from datetime import datetime as dt
 from utils import *
 
 
-def get_distance(a, b, sq=True):
+def get_distance(a, b, sq=False):
     x1, y1 = a[0], a[1]
     x2, y2 = b[0], b[1]
 
@@ -15,7 +15,18 @@ def get_distance(a, b, sq=True):
         return x * x + y * y
 
 
-def optimise_path(shapes, sq=True):
+def get_total_distance(shapes):
+
+    total_distance = 0
+    last = shapes.pop(0)[-1]
+
+    for i in shapes:
+        total_distance += get_distance(i[0], last, sq=True)
+
+    return total_distance
+
+
+def optimise_path(shapes, sq=False):
 
     t1 = dt.now()
     new_order = []
@@ -49,3 +60,4 @@ def optimise_path(shapes, sq=True):
 
     timer(t1, "optimizing       ")
     return new_order
+

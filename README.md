@@ -20,4 +20,4 @@ There are various settings you can change in config.py. Most notably, you must s
 
 zTravel is the height it will move to before traveling to the next stroke
 
-zDraw should be the height at which the pen will make contact with the paper
+zDraw should be the heiggit at which the pen will make contact with the paper

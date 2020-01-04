@@ -7,7 +7,7 @@ from shapes import point_generator
 from config import *
 import re
 from datetime import datetime as dt
-from optimise import optimise_path
+from optimise import optimise_path, get_total_distance
 from utils import *
 
 debug = False
@@ -116,10 +116,25 @@ def main(file_path, output):
 
     shapes = get_shapes(file_path)
 
+
+
     if optimise:
 
+        pre_distance = get_total_distance(shapes)
+
+        print("unoptimised distance: ", get_total_distance(shapes))
+
         new_order = optimise_path(shapes)
+
+        post_distance = get_total_distance(new_order)
+
+        print("unoptimised distance: ", pre_distance)
+        print("optimised distance    ", post_distance)
+        print("factor:               ", post_distance / pre_distance)
+
         commands = shapes_2_gcode(new_order)
+
+
 
     else:
 
