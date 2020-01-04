@@ -41,7 +41,14 @@ precision = 2
 
 
 """ scale gcode to fit bed size"""
-auto_scale = True
+auto_scale = False
 
 """ optimize path - slow for large files"""
 optimise = True
+
+""" 
+illustrator exports svg's in points, not mm
+set to "mm" if you don't want to convert to mm
+"""
+units = "points"
+#units = "mm"

@@ -9,6 +9,7 @@ def get_distance(a, b, sq=False):
 
     x = x2 - x1
     y = y2 - y1
+
     if sq:
         return sqrt(x * x + y * y)
     else:

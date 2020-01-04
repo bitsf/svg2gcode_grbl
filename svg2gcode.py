@@ -23,10 +23,11 @@ def get_shapes(path, auto_scale=True):
     shapes = []
     tree = ET.parse(path)
     root = tree.getroot()
+
+    pointRatio = 0.352778
+
     width = root.get('width')
     height = root.get('height')
-
-
 
     if width is None or height is None:
         viewbox = root.get('viewBox')
@@ -37,8 +38,15 @@ def get_shapes(path, auto_scale=True):
         print("Unable to get width and height for the svg")
         sys.exit(1)
 
-    width = float(re.sub("[^0-9]", "", width))
-    height = float(re.sub("[^0-9]", "", height))
+    # width = float(re.sub("[^0-9]", "", width))
+    # height = float(re.sub("[^0-9]", "", height))
+
+    width = float(width)
+    height = float(height)
+
+    if units == "points":
+        width *= pointRatio
+        height *= pointRatio
 
     if auto_scale:
         print("\nauto scaling")
@@ -75,6 +83,11 @@ def get_shapes(path, auto_scale=True):
                 first = True
 
                 for x, y in p:  # todo sort out this nightmare
+
+                    if units == "points":
+
+                        x *= pointRatio
+                        y *= pointRatio
 
                     y = -y + height
 
@@ -114,8 +127,13 @@ def g_string(x, y, z=False, prefix="G1", p=3):
 def shapes_2_gcode(shapes):
 
     t1 = dt.now()
-    commands = []
+    with open("header.txt") as h:
+        header = h.read()
+
+    commands = [f"{header}", f'F{feed_rate}']
+
     for i in shapes:
+        commands += ['', shape_preamble, ""]
 
         commands.append(g_string(i[0][0], i[0][1], zTravel, "G0"))
 
@@ -123,6 +141,13 @@ def shapes_2_gcode(shapes):
             commands.append(g_string(j[0], j[1], zDraw))
 
         commands.append(g_string(i[-1][0], i[-1][1], zTravel, "G0"))
+
+        commands += ["", shape_postamble, ""]
+
+    commands += [" ",postamble, ""]
+
+    commands += ["(home)", f"G0 {zTravel}", f"G0 X0 Y0"]
+
 
     timer(t1, "shapes_2_gcode   ")
     return commands
