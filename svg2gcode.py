@@ -16,12 +16,12 @@ debug = False
 # todo add z rise option
 # todo why do i need to flip?
 
-def get_shapes(path, auto_scale=True):
+def get_shapes(svg_file, auto_scale=True):
 
     t1 = dt.now()
     svg_shapes = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
     shapes = []
-    tree = ET.parse(path)
+    tree = ET.parse(svg_file)
     root = tree.getroot()
 
     pointRatio = 0.352778
@@ -38,8 +38,16 @@ def get_shapes(path, auto_scale=True):
         print("Unable to get width and height for the svg")
         sys.exit(1)
 
-    # width = float(re.sub("[^0-9]", "", width))
-    # height = float(re.sub("[^0-9]", "", height))
+    width = float(re.sub("[^0-9]", "", width))
+    height = float(re.sub("[^0-9]", "", height))
+
+    # if "px" in width:
+    #     print("px")
+    #     width.replace("px", "")q
+    #
+    # if "px" in height:
+    #     print("px")
+    #     height.replace("px", "")
 
     width = float(width)
     height = float(height)
@@ -152,13 +160,7 @@ def shapes_2_gcode(shapes):
     timer(t1, "shapes_2_gcode   ")
     return commands
 
-def write_file(output, commands):
 
-    t1 = dt.now()
-    with open(output, 'w+') as output_file:
-        for i in commands:
-            output_file.write(i + "\n")
-    timer(t1, "writing file     ")
 
 def main(file_path, output):
 
@@ -188,7 +190,7 @@ def main(file_path, output):
 
         commands = shapes_2_gcode(shapes)
 
-    write_file(output, commands)
+    write_gcode(output, commands)
 
     print("done")
 
