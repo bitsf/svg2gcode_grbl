@@ -12,6 +12,8 @@ from utils import *
 
 debug = False
 
+# todo fix total distance algorithm
+# todo can we guess the units?
 # todo add manual scale option
 # todo add z rise option
 # todo why do i need to flip?
@@ -41,8 +43,9 @@ def get_shapes(path, auto_scale=True):
     # width = float(re.sub("[^0-9]", "", width))
     # height = float(re.sub("[^0-9]", "", height))
 
-    width = float(width)
-    height = float(height)
+    width = float(re.findall(r"[-+]?\d*\.\d+|\d+", width)[0])
+    height = float(re.findall(r"[-+]?\d*\.\d+|\d+", height)[0])
+    print("width / height        ", width, height)
 
     if units == "points":
         width *= pointRatio
@@ -199,6 +202,7 @@ if __name__ == "__main__":
     # file_path = "./svg/medium_example.svg"
     file_path = "./svg/text.svg"
     # file_path = "./svg/example.svg"
+    # file_path = "./svg/lines.svg"
 
     output = "./gcode_optimised/1.gcode"
 
