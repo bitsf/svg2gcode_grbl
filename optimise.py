@@ -1,7 +1,7 @@
 from math import sqrt
 from datetime import datetime as dt
 from utils import *
-
+import json
 
 def get_distance(a, b, sq=False):
     x1, y1 = a[0], a[1]
@@ -33,8 +33,13 @@ def optimise_path(shapes, sq=False):
     new_order = []
     new_order.append(shapes.pop(0))
     l = len(shapes)
+    lp = 0
+    print(lp)
     while len(new_order) <= l:
-
+        p = round((1-(len(shapes) / l))*100)
+        if not p == lp:
+            print(p)
+            lp = p
         shortest = float("Inf")
         last = new_order[-1][-1]
 
@@ -54,11 +59,16 @@ def optimise_path(shapes, sq=False):
                 selection = shape
 
         if reverse:
-            new_order.append([x for x in reversed(selection)])
+            new_order.append(list(reversed(selection)))
+            #new_order.append([x for x in reversed(selection)])
+
         else:
             new_order.append(selection)
         shapes.remove(selection)
 
     timer(t1, "optimizing       ")
+
+
+
     return new_order
 
