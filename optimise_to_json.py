@@ -18,25 +18,51 @@ def read(infile):
         return jload(i)
 
 proj_location = "/Users/alexanderharding/Dropbox/bish/project/plots/rofl/square"
-file_location = join(proj_location, "svg")
+svg_location = join(proj_location, "svg")
+json_location = join(proj_location, "json")
+gcode_location = join(proj_location, "gcode")
 
-print(file_location)
+svg_file = "square.svg"
+svg_path = join(svg_location, svg_file)
+file_name = svg_file.split(".")[0]
 
-svg_file = "round_1.svg"
-svg_file = "text.svg"
-shapes_output = f"{svg_file}.json"
-optimised_output = f"{svg_file}_optimised.json"
-gcode_output = "dun.gcode"
+shapes_file = f"{file_name}_shapes.json"
+shapes_path = join(json_location, shapes_file)
 
-auto_scale = False
+optimised_shapes_file = f"{file_name}_optimised.json"
+optimised_shapes_path = join(json_location, optimised_shapes_file)
+
+concatenated_shapes_file = f"{file_name}_optimised.json"
+concatenated_shapes_path = join(json_location, concatenated_shapes_file)
+
+scaled_shapes_file = f"{file_name}_scaled.json"
+scaled_shapes_path = join(json_location, scaled_shapes_file)
+
+gcode_output_file = f"{file_name}.gcode"
+gcode_output_path = join(gcode_location, gcode_output_file)
+
+print(proj_location)
+print(svg_location)
+print(json_location)
+print(gcode_location)
+print(svg_path)
+print(shapes_path)
+print(optimised_shapes_path)
+print(scaled_shapes_path)
+print(concatenated_shapes_path)
+print(gcode_output_path)
+
+# auto_scale = False
 #
-# shapes = get_shapes(join(file_location, svg_file), auto_scale)    #parse svg
-# dump(join(file_location, shapes_output), shapes)                  #dump parsed svg to json
-# jshapes  = (read(join(file_location, shapes_output)))               #read shapes from json
-# new_order = optimise_path(jshapes)                                  #optimise json shapes
-# dump(join(file_location, optimised_output), new_order)              #dunmp optimised shapes
+# shapes = get_shapes(svg_path)                                         #parse svg
+# dump(shapes_path, shapes)                                             #dump parsed svg to json
+
+jshapes = read(shapes_path)                                           #read shapes from json
+new_order = optimise_path(jshapes)                                    #optimise json shapes
+dump(optimised_shapes_path, new_order)                                #dunmp optimised shapes
+
+# jnew_order = read(optimised_shapes_path)                              #read optimised shapes
+# commands = shapes_2_gcode(jnew_order)                                 #generate gcode commands
 #
-# # jnew_order = read(join(file_location,optimised_output))           #read optimised shapes
-# # commands = shapes_2_gcode(jnew_order)                             #generate gcode commands
-#
-# # write_gcode(join(file_location, gcode_output), commands)          #write gcode file
+# write_gcode(gcode_output_path, commands)                              #write gcode file
+
