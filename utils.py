@@ -12,4 +12,5 @@ def write_gcode(output_file_name, data):
     with open(output_file_name, 'w+') as output_file:
         for i in data:
             output_file.write(i + "\n")
+    print(f"writing to {output_file_name}")
     timer(t1, "writing file     ")

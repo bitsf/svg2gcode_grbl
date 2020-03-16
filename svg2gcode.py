@@ -7,7 +7,7 @@ from shapes import point_generator
 from config import *
 import re
 from datetime import datetime as dt
-from optimise import optimise_path, get_total_distance
+from optimise import optimise_path, get_total_distance, test_edges
 from utils import *
 
 debug = False
@@ -16,7 +16,7 @@ debug = False
 # todo add z rise option
 # todo why do i need to flip?
 
-def get_shapes(svg_file, auto_scale=True):
+def get_shapes(svg_file, auto_scale=False):
 
     t1 = dt.now()
     svg_shapes = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
@@ -132,13 +132,19 @@ def g_string(x, y, z=False, prefix="G1", p=3):
         return f"{prefix} X{x:.{p}f} Y{y:.{p}f}"
 
 
-def shapes_2_gcode(shapes):
+def shapes_2_gcode(shapes, test_boundries = False):
 
     t1 = dt.now()
     with open("header.txt") as h:
         header = h.read()
 
     commands = [f"{header}", f'F{feed_rate}']
+
+    if test_boundries:
+
+        # commands.append("(boundry check)")
+        for i in test_edges(shapes):
+            commands.append(g_string(i[0],i[1], zTravel, "G0"))
 
     for i in shapes:
         commands += ['', shape_preamble, ""]

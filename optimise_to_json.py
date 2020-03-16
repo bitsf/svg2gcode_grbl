@@ -1,4 +1,4 @@
-from optimise import optimise_path
+from optimise import optimise_path, auto_scale, concatenate, lerp, remove_redundant_lines
 from svg2gcode import get_shapes, shapes_2_gcode
 from os.path import join
 from json import dump as jdump, load as jload
@@ -22,7 +22,10 @@ svg_location = join(proj_location, "svg")
 json_location = join(proj_location, "json")
 gcode_location = join(proj_location, "gcode")
 
+svg_file = "test_shapes.svg"
 svg_file = "square.svg"
+# svg_file = "square.svg"
+
 svg_path = join(svg_location, svg_file)
 file_name = svg_file.split(".")[0]
 
@@ -57,12 +60,21 @@ print(gcode_output_path)
 # shapes = get_shapes(svg_path)                                         #parse svg
 # dump(shapes_path, shapes)                                             #dump parsed svg to json
 
-jshapes = read(shapes_path)                                           #read shapes from json
-new_order = optimise_path(jshapes)                                    #optimise json shapes
-dump(optimised_shapes_path, new_order)                                #dunmp optimised shapes
+# jshapes = read(shapes_path)                                           #read shapes from json
+# new_order = optimise_path(jshapes)                                    #optimise json shapes
+# dump(optimised_shapes_path, new_order)                                #dunmp optimised shapes
 
-# jnew_order = read(optimised_shapes_path)                              #read optimised shapes
-# commands = shapes_2_gcode(jnew_order)                                 #generate gcode commands
-#
+jnew_order = read(optimised_shapes_path)                              #read optimised shapes
+
+scaled_shapes = auto_scale(jnew_order, 287, 366)
+current = scaled_shapes
+
+# concat_shapes = concatenate(current, 0.35)
+# current = concat_shapes
+
+remove_reundant = remove_redundant_lines(current, 0.4)
+
+commands = shapes_2_gcode(current, test_boundries=False)                                 #generate gcode commands
+
 # write_gcode(gcode_output_path, commands)                              #write gcode file
 

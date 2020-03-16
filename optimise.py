@@ -72,3 +72,173 @@ def optimise_path(shapes, sq=False):
 
     return new_order
 
+def get_min_max(shapes):
+
+    xMin, yMin = float("inf"), float("inf")
+    xMax, yMax = 0, 0
+
+    for i in shapes:
+        for j in i:
+            xMin = min(xMin, j[0])
+            xMax = max(xMax, j[0])
+            yMin = min(yMin, j[1])
+            yMax = max(yMax, j[1])
+
+    print(f"min is {xMin}, {yMin}")
+    print(f"max is {xMax}, {yMax}")
+
+    return xMin, yMin, xMax, yMax
+
+def test_edges(shapes):
+
+    m = get_min_max(shapes)
+    xMin = m[0]
+    yMin = m[1]
+    xMax = m[2]
+    yMax = m[3]
+
+
+    boundry = [ [xMin, yMin], [xMin, yMax], [xMax, yMax], [xMax, yMin], xMin, yMin]
+    return boundry
+
+def scale_shapes(shapes, x_scale, y_scale):
+
+    for i in shapes:
+        for j in i:
+            shapes[i][j][0] = shapes[i][j][0] * x_scale
+            shapes[i][j][1] = shapes[i][j][1] * y_scale
+
+    return shapes
+
+def lerp(old_min, new_min, old_max, new_max, value):
+
+    OldRange = (old_max - old_min)
+    NewRange = (new_max - new_min)
+    return (((value - old_min) * NewRange) / OldRange) + new_min
+
+
+def auto_scale(shapes,bed_x, bed_y):
+
+    min_max = get_min_max(shapes)
+    old_min = min(min_max[0], min_max[1])
+    old_max = max(min_max[2], min_max[3])
+    new_min = 0
+    new_max = min(bed_x, bed_y)
+
+    print(old_min)
+    print(old_max)
+    print(new_min)
+    print(new_max)
+    # print(shapes)
+    for x, i in enumerate(shapes):
+
+        for y, j in enumerate(i):
+            for z, k in enumerate(j):
+                shapes[x][y][z] = lerp(old_min, new_min, old_max, new_max, shapes[x][y][z])
+    # print(shapes)
+
+    # for i in shapes:
+    #     for j in i:
+    #         for k in j:
+    #
+    #             shapes[i][j][k] = lerp(old_min, new_min, old_max, new_max, shapes[i][j][k])
+    #
+    # return shapes
+    return shapes
+
+def concatenate(shapes, threshold):
+    print("concat")
+    new_shapes = []
+    new_shape = []
+    for x, i in enumerate(shapes):
+
+        current_start = shapes[x][0]
+        previous_end = shapes[x-1][-1]
+        current_shape = i
+
+        if len(new_shape) == 0:
+            new_shape = current_shape
+
+
+        if get_distance(current_start, previous_end, True) < threshold:
+            new_shape += current_shape
+
+        else:
+            new_shapes.append(new_shape)
+            new_shape = []
+
+    print(f"{len(shapes)} became {len(new_shapes)} shapes")
+
+    return new_shapes
+
+def compare_lines(line1, line2, threshold): #return true if lines are too similar
+
+    count = 0
+
+    def check(list):  #return true if all values are below threshold
+
+        for i in list:
+            # print(abs(i))
+            if abs(i) >= threshold:
+                # print(abs(i))
+                return False
+
+        return True
+
+    l1_x1 = line1[0][0]
+    l1_y1 = line1[0][1]
+    l1_x2 = line1[1][0]
+    l1_y2 = line1[1][1]
+
+    l2_x1 = line2[0][0]
+    l2_y1 = line2[0][1]
+    l2_x2 = line2[1][0]
+    l2_y2 = line2[1][1]
+
+    d1 = l1_x1 - l2_x1
+    d2 = l1_y1 - l2_y1
+    d3 = l1_x2 - l2_x2
+    d4 = l1_y2 - l2_y2
+
+    d5 = l1_x1 - l2_x2
+    d6 = l1_y1 - l2_y2
+    d7 = l1_x2 - l2_x1
+    d8 = l1_x2 - l2_y2
+
+    c1 = check([d1, d2, d3, d4])
+    c2 = check([d5, d6, d7, d8])
+
+    if c1 or c2:
+        return True
+        count += 1
+
+    else:
+        return False
+
+
+def remove_redundant_lines(shapes, threshold):
+    count = 0
+    first = True
+    prev_points = shapes[0][0]
+    prev_line = ()
+    for shape in shapes:
+        for points in shape:
+
+            if first:
+                first = False
+                continue
+
+            line = (prev_points, points)
+
+            if not prev_line:
+
+                prev_line = line
+                continue
+            if compare_lines(prev_line, line, threshold):
+                count += 1
+            prev_points = points
+            prev_line = line
+    print(f"redundant lines: {count}")
+
+
+
