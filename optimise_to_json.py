@@ -1,4 +1,4 @@
-from optimise import optimise_path, auto_scale, concatenate, lerp, remove_redundant_lines
+from optimise import optimise_path, auto_scale, concatenate, remove_redundant_lines
 from svg2gcode import get_shapes, shapes_2_gcode
 from os.path import join
 from json import dump as jdump, load as jload
@@ -17,13 +17,13 @@ def read(infile):
     with open(infile) as i:
         return jload(i)
 
-proj_location = "/Users/alexanderharding/Dropbox/bish/project/plots/rofl/square"
+proj_location = "/Users/alexanderharding/Dropbox/bish/project/plots/noiseField"
 svg_location = join(proj_location, "svg")
 json_location = join(proj_location, "json")
 gcode_location = join(proj_location, "gcode")
-
-svg_file = "test_shapes.svg"
-svg_file = "square.svg"
+#
+# svg_file = "test_shapes.svg"
+svg_file = "1.svg"
 # svg_file = "square.svg"
 
 svg_path = join(svg_location, svg_file)
@@ -41,7 +41,9 @@ concatenated_shapes_path = join(json_location, concatenated_shapes_file)
 scaled_shapes_file = f"{file_name}_scaled.json"
 scaled_shapes_path = join(json_location, scaled_shapes_file)
 
-gcode_output_file = f"{file_name}.gcode"
+version = 7
+
+gcode_output_file = f"{file_name}_v{version}.gcode"
 gcode_output_path = join(gcode_location, gcode_output_file)
 
 print(proj_location)
@@ -57,24 +59,25 @@ print(gcode_output_path)
 
 # auto_scale = False
 #
-# shapes = get_shapes(svg_path)                                         #parse svg
-# dump(shapes_path, shapes)                                             #dump parsed svg to json
+shapes = get_shapes(svg_path)                                         #parse svg
+dump(shapes_path, shapes)                                             #dump parsed svg to json
+current = read(shapes_path)
 
-# jshapes = read(shapes_path)                                           #read shapes from json
-# new_order = optimise_path(jshapes)                                    #optimise json shapes
-# dump(optimised_shapes_path, new_order)                                #dunmp optimised shapes
+jshapes = read(shapes_path)                                           #read shapes from json
+new_order = optimise_path(current)                                    #optimise json shapes
+dump(optimised_shapes_path, new_order)                                #dunmp optimised shapes
+current = read(optimised_shapes_path)
 
-jnew_order = read(optimised_shapes_path)                              #read optimised shapes
-
-scaled_shapes = auto_scale(jnew_order, 287, 366)
+# jnew_order = read(optimised_shapes_path)                              #read optimised shapes
+#
+scaled_shapes = auto_scale(current, 287, 366)
 current = scaled_shapes
 
 # concat_shapes = concatenate(current, 0.35)
 # current = concat_shapes
 
-remove_reundant = remove_redundant_lines(current, 0.4)
-
+# remove_reundant = remove_redundant_lines(current, 0.4)
+#
 commands = shapes_2_gcode(current, test_boundries=False)                                 #generate gcode commands
 
-# write_gcode(gcode_output_path, commands)                              #write gcode file
-
+write_gcode(gcode_output_path, commands)                              #write gcode file
