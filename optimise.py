@@ -72,6 +72,35 @@ def optimise_path(shapes, sq=False):
 
     return new_order
 
+
+
+def test_edges(shapes):
+
+    m = get_min_max(shapes)
+    xMin = m[0]
+    yMin = m[1]
+    xMax = m[2]
+    yMax = m[3]
+
+
+    boundry = [ [xMin, yMin], [xMin, yMax], [xMax, yMax], [xMax, yMin], xMin, yMin]
+    return boundry
+
+# def scale_shapes(shapes, x_scale, y_scale):
+#
+#     for i in shapes:
+#         for j in i:
+#             shapes[i][j][0] = shapes[i][j][0] * x_scale
+#             shapes[i][j][1] = shapes[i][j][1] * y_scale
+#
+#     return shapes
+
+# def lerp(old_min, new_min, old_max, new_max, value):
+#
+#     OldRange = (old_max - old_min)
+#     NewRange = (new_max - new_min)
+#     return (((value - old_min) * NewRange) / OldRange) + new_min
+
 def get_min_max(shapes):
 
     xMin, yMin = float("inf"), float("inf")
@@ -87,64 +116,65 @@ def get_min_max(shapes):
     print(f"min is {xMin}, {yMin}")
     print(f"max is {xMax}, {yMax}")
 
-    return xMin, yMin, xMax, yMax
-
-def test_edges(shapes):
-
-    m = get_min_max(shapes)
-    xMin = m[0]
-    yMin = m[1]
-    xMax = m[2]
-    yMax = m[3]
-
-
-    boundry = [ [xMin, yMin], [xMin, yMax], [xMax, yMax], [xMax, yMin], xMin, yMin]
-    return boundry
-
-def scale_shapes(shapes, x_scale, y_scale):
-
-    for i in shapes:
-        for j in i:
-            shapes[i][j][0] = shapes[i][j][0] * x_scale
-            shapes[i][j][1] = shapes[i][j][1] * y_scale
-
-    return shapes
-
-def lerp(old_min, new_min, old_max, new_max, value):
-
-    OldRange = (old_max - old_min)
-    NewRange = (new_max - new_min)
-    return (((value - old_min) * NewRange) / OldRange) + new_min
-
+    return (xMin, yMin), (xMax, yMax)
 
 def auto_scale(shapes,bed_x, bed_y):
 
+
+    def scale(old_min_xy, old_max_xy, bed_xy, value_xy):
+
+        offset_x = old_min_xy[0]
+        offset_y = old_min_xy[1]
+
+        old_max_offsetted_x = old_max_xy[0] - offset_x
+        old_max_offsetted_y = old_max_xy[1] - offset_y
+
+        scale_x = bed_xy[0] / old_max_offsetted_x
+        scale_y = bed_xy[1] / old_max_offsetted_y
+        scale = min(scale_x, scale_y)
+
+        x = value_xy[0] - offset_x
+        y = value_xy[1] - offset_y
+
+        x *= scale
+        y *= scale
+
+        return x, y
+
+
     min_max = get_min_max(shapes)
-    old_min = min(min_max[0], min_max[1])
-    old_max = max(min_max[2], min_max[3])
-    new_min = 0
-    new_max = min(bed_x, bed_y)
 
-    print(old_min)
-    print(old_max)
-    print(new_min)
-    print(new_max)
-    # print(shapes)
     for x, i in enumerate(shapes):
-
         for y, j in enumerate(i):
-            for z, k in enumerate(j):
-                shapes[x][y][z] = lerp(old_min, new_min, old_max, new_max, shapes[x][y][z])
-    # print(shapes)
+            shapes[x][y] = scale(min_max[0], min_max[1], (bed_x, bed_y), shapes[x][y])
 
-    # for i in shapes:
-    #     for j in i:
-    #         for k in j:
+    return shapes
     #
-    #             shapes[i][j][k] = lerp(old_min, new_min, old_max, new_max, shapes[i][j][k])
+    #
+    # min_max = get_min_max(shapes)
+    # old_min = min(min_max[0], min_max[1])
+    # old_max = max(min_max[2], min_max[3])
+    # new_min = 0
+    # new_max = max(bed_x, bed_y)
+    #
+    # print(f"old min {old_min}")
+    # print(f"old max {old_max}")
+    # print(f"new_min {new_min}")
+    # print(f"new_max {new_max}")
+    #
+    # # print(f"")
+    #
+    # # print(shapes)
+    # for x, i in enumerate(shapes):
+    #
+    #     for y, j in enumerate(i):
+    #         for z, k in enumerate(j):
+    #             this = shapes[x][y][z]
+    #             this_lerp = lerp(old_min, new_min, old_max, new_max, this)
+    #             # print(f"{this:03}  -->  {this_lerp:03}")
+    #             shapes[x][y][z] = this_lerp
     #
     # return shapes
-    return shapes
 
 def concatenate(shapes, threshold):
     print("concat")
