@@ -15,7 +15,7 @@ So I modified this to generate gcode for GRBL based pen plotter
 copy 's2g' to your path and run from anywhere
 >s2g source.svg target.gcode
 
-**There is a brute force path optimisator algarithm. Very slow for large files, can be disabled in config.py**
+**There is a brute force path optimisator algorithm. Very slow for large files, can be disabled in config.py**
 
 **Illustrator exports in points, not mm** regardless of your document settings.  
 If units are set to points in the config file, we convert to mm on the fly.
