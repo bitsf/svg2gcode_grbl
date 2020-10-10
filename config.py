@@ -3,7 +3,7 @@ preamble = "G90"
 
 
 """G-code emitted at the end of processing the SVG file"""
-postamble = "(postamble)"
+postamble = "M110"
 
 """G-code emitted before processing a SVG shape"""
 shape_preamble = "(shape preamble)"
@@ -12,6 +12,9 @@ shape_preamble = "(shape preamble)"
 """G-code emitted after processing a SVG shape"""
 shape_postamble = "(shape postamble)"
 #shape_postamble = "Z100)"
+
+shape_premove = "M111 S3"
+shape_postmove = "M111 S5"
 
 """Print bed width in mm"""
 bed_max_x = 200
@@ -25,7 +28,7 @@ Smaller the value greater the sharpness. Make sure the
 value is greater than 0.1
 
 """
-smoothness = 0.02
+smoothness = 0.1
 
 """ height that the z axis will use to travel between strokes """
 zTravel = 4
@@ -44,7 +47,7 @@ precision = 2
 auto_scale = False
 
 """ optimize path - slow for large files"""
-optimise = True
+optimise = False
 
 """ 
 illustrator exports svg's in points, not mm

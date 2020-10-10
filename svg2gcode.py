@@ -138,7 +138,9 @@ def shapes_2_gcode(shapes):
     for i in shapes:
         commands += ['', shape_preamble, ""]
 
+        commands.append(shape_premove)
         commands.append(g_string(i[0][0], i[0][1], zTravel, "G0"))
+        commands.append(shape_postmove)
 
         for j in i:
             commands.append(g_string(j[0], j[1], zDraw))
@@ -172,8 +174,6 @@ def main(file_path, output):
     if optimise:
 
         pre_distance = get_total_distance(shapes)
-
-        print("unoptimised distance: ", get_total_distance(shapes))
 
         new_order = optimise_path(shapes)
 

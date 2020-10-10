@@ -14,8 +14,10 @@ def maxdist(xxx_todo_changeme):
       
   
 def cspsubdiv(csp,flat):  
-    for sp in csp:  
-        subdiv(sp,flat)  
+    for sp in csp:
+        i=1
+        while i<len(sp):
+            i=subdiv(sp,flat,i)
   
 def subdiv(sp,flat,i=1):  
     p0 = sp[i-1][1]  
@@ -25,15 +27,12 @@ def subdiv(sp,flat,i=1):
       
     b = (p0,p1,p2,p3)  
     m = maxdist(b)  
-    if m <= flat:  
-        try:  
-            subdiv(sp,flat,i+1)  
-        except IndexError:  
-            pass  
+    if m <= flat:
+        return i+1
     else:  
         one, two = beziersplitatt(b,0.5)  
         sp[i-1][2] = one[1]  
         sp[i][0] = two[2]  
         p = [one[2],one[3],two[1]]  
         sp[i:1] = [p]      
-        subdiv(sp,flat,i)  
+        return i
